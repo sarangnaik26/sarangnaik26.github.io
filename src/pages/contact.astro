@@ -1,0 +1,84 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ContactForm from '@/components/ContactForm.astro';
+import { site, socials } from '@/config/site';
+import Icon from '@/components/Icon.astro';
+---
+
+<BaseLayout
+  title="Contact"
+  description="Send a note to FairyPrisme. We welcome inquiries about our games, future releases, collaboration, or general questions."
+>
+  <div class="section-y">
+    <div class="container-x">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        <!-- Left info column -->
+        <div class="lg:col-span-5 space-y-8" data-reveal>
+          <div class="space-y-4">
+            <span class="eyebrow">Correspondence</span>
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-normal">
+              Get in Touch
+            </h1>
+            <p class="lead text-base sm:text-lg">
+              Whether you have feedback on Floaty Bird Reverse, a press inquiry, or simply want to say hello as we create our next projects, we'd love to hear from you.
+            </p>
+          </div>
+
+          <!-- Direct email card -->
+          <div class="card p-6 border-[var(--hairline)] bg-[var(--color-plum)] space-y-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-[var(--color-gold)]">
+              Direct Mailbox
+            </span>
+            <div>
+              <a
+                href={`mailto:${site.email}`}
+                class="text-lg sm:text-xl font-medium text-[var(--color-pearl)] hover:text-[var(--color-gold)] transition-colors inline-flex items-center gap-2"
+              >
+                <span>{site.email}</span>
+                <Icon name="mail" size={16} class="text-[var(--color-gold)]" />
+              </a>
+            </div>
+            <p class="text-xs text-[var(--color-mist)] leading-relaxed pt-1">
+              For direct notes or press attachments, feel free to write directly from your preferred email client.
+            </p>
+          </div>
+
+          <!-- Social handles (only shows those configured with URLs) -->
+          {socials.length > 0 && (
+            <div class="space-y-3 pt-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[var(--color-gold)] block">
+                Social Presences
+              </span>
+              <div class="flex flex-wrap items-center gap-3">
+                {socials.map((social) => (
+                  <a
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-ghost text-xs py-2 px-3.5 inline-flex items-center gap-2"
+                    aria-label={`Visit our ${social.label}`}
+                  >
+                    <Icon name={social.key} size={15} />
+                    <span>{social.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div class="p-6 rounded-2xl border border-[var(--hairline)] bg-[color-mix(in_oklab,var(--color-ink)_60%,var(--color-plum))] space-y-2 text-xs text-[var(--color-mist)]">
+            <span class="text-[var(--color-gold)] font-medium block">Privacy Guarantee</span>
+            <p>
+              Your contact details are strictly kept between us and used solely to reply to your note. We never share or sell personal information.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right form column -->
+        <div class="lg:col-span-7" data-reveal style="--reveal-delay: 150ms;">
+          <ContactForm />
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

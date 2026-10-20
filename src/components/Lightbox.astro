@@ -1,0 +1,212 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+
+interface Screenshot {
+  src: ImageMetadata;
+  alt: string;
+}
+
+interface Props {
+  screenshots: Screenshot[];
+  gameTitle: string;
+}
+
+const { screenshots, gameTitle } = Astro.props;
+---
+
+<div class="gallery-wrapper relative">
+  <!-- Gallery Thumbnail Grid / Scroll Container -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    {
+      screenshots.map((shot, idx) => (
+        <button
+          type="button"
+          class="gallery-thumb group relative aspect-[9/16] w-full overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--color-plum)] text-left transition-all duration-300 hover:border-[var(--color-orchid)] hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-gold)] cursor-pointer"
+          data-index={idx}
+          aria-label={`View screenshot ${idx + 1} of ${screenshots.length}: ${shot.alt}`}
+        >
+          <Image
+            src={shot.src}
+            alt={shot.alt}
+            width={360}
+            height={640}
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
+          />
+
+          <!-- Overlay with zoom icon -->
+          <div class="absolute inset-0 bg-gradient-to-t from-[var(--color-ink)]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3">
+            <span class="text-[0.7rem] text-[var(--color-pearl)] font-medium bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+              {idx + 1} / {screenshots.length}
+            </span>
+            <span class="w-7 h-7 rounded-full bg-[var(--color-gold)] text-[var(--color-ink)] inline-flex items-center justify-center shadow-md">
+              <Icon name="zoom" size={14} />
+            </span>
+          </div>
+        </button>
+      ))
+    }
+  </div>
+
+  <!-- Lightbox Modal Dialog -->
+  <dialog
+    id="screenshot-lightbox"
+    class="fixed inset-0 z-[100] m-0 h-full w-full max-h-none max-w-none bg-[color-mix(in_oklab,var(--color-ink)_94%,black)]/95 backdrop-blur-xl p-0 border-0 flex-col items-center justify-center text-[var(--color-pearl)] open:flex"
+    aria-label={`${gameTitle} screenshot gallery viewer`}
+  >
+    <!-- Top toolbar -->
+    <div class="absolute top-0 inset-x-0 h-16 px-6 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
+      <div class="flex items-center gap-3">
+        <span class="text-xs uppercase tracking-[0.2em] text-[var(--color-gold)] font-medium">
+          {gameTitle}
+        </span>
+        <span class="text-xs text-[var(--color-mist)] font-mono" id="lightbox-counter">
+          1 / {screenshots.length}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        id="lightbox-close"
+        class="w-10 h-10 rounded-full border border-[var(--hairline)] bg-[var(--color-plum)] text-[var(--color-pearl)] hover:text-[var(--color-orchid)] hover:border-[var(--color-orchid)] inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-gold)] cursor-pointer"
+        aria-label="Close screenshot preview (Esc)"
+      >
+        <Icon name="close" size={20} />
+      </button>
+    </div>
+
+    <!-- Main Viewport with Prev / Image / Next -->
+    <div class="relative flex-1 w-full max-w-5xl flex items-center justify-between px-4 sm:px-8 py-20">
+      <!-- Previous button -->
+      <button
+        type="button"
+        id="lightbox-prev"
+        class="z-10 w-12 h-12 rounded-full border border-[var(--hairline)] bg-[var(--color-plum)]/80 backdrop-blur-md text-[var(--color-pearl)] hover:text-[var(--color-gold)] hover:border-[var(--color-gold)] inline-flex items-center justify-center transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-gold)] cursor-pointer shrink-0"
+        aria-label="Previous screenshot (Left arrow)"
+      >
+        <Icon name="chevronLeft" size={24} />
+      </button>
+
+      <!-- Active image container -->
+      <div class="flex-1 max-h-[75vh] flex items-center justify-center px-4 overflow-hidden">
+        <img
+          id="lightbox-img"
+          src=""
+          alt=""
+          class="max-h-[75vh] w-auto max-w-full rounded-2xl border border-[var(--hairline-strong)] shadow-2xl object-contain transition-opacity duration-200"
+        />
+      </div>
+
+      <!-- Next button -->
+      <button
+        type="button"
+        id="lightbox-next"
+        class="z-10 w-12 h-12 rounded-full border border-[var(--hairline)] bg-[var(--color-plum)]/80 backdrop-blur-md text-[var(--color-pearl)] hover:text-[var(--color-gold)] hover:border-[var(--color-gold)] inline-flex items-center justify-center transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-gold)] cursor-pointer shrink-0"
+        aria-label="Next screenshot (Right arrow)"
+      >
+        <Icon name="chevronRight" size={24} />
+      </button>
+    </div>
+
+    <!-- Bottom caption bar -->
+    <div class="absolute bottom-0 inset-x-0 min-h-16 px-6 py-4 flex items-center justify-center text-center bg-gradient-to-t from-black/90 to-transparent">
+      <p id="lightbox-caption" class="text-xs sm:text-sm text-[var(--color-mist)] max-w-xl">
+      </p>
+    </div>
+  </dialog>
+</div>
+
+<script is:inline define:vars={{ shotsData: screenshots.map((s) => ({ src: s.src.src, alt: s.alt })) }}>
+  (function () {
+    const dialog = document.getElementById('screenshot-lightbox');
+    const closeBtn = document.getElementById('lightbox-close');
+    const prevBtn = document.getElementById('lightbox-prev');
+    const nextBtn = document.getElementById('lightbox-next');
+    const img = document.getElementById('lightbox-img');
+    const counter = document.getElementById('lightbox-counter');
+    const caption = document.getElementById('lightbox-caption');
+    const thumbs = document.querySelectorAll('.gallery-thumb');
+
+    if (!dialog || !img || !counter || !caption || !shotsData.length) return;
+
+    let currentIndex = 0;
+    let lastActiveTrigger = null;
+
+    function updateView(idx) {
+      currentIndex = (idx + shotsData.length) % shotsData.length;
+      const data = shotsData[currentIndex];
+      img.style.opacity = '0.5';
+      img.src = data.src;
+      img.alt = data.alt;
+      counter.textContent = `${currentIndex + 1} / ${shotsData.length}`;
+      caption.textContent = data.alt;
+      setTimeout(() => {
+        img.style.opacity = '1';
+      }, 50);
+    }
+
+    function openAt(idx, triggerEl) {
+      lastActiveTrigger = triggerEl;
+      updateView(idx);
+      if (typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute('open', '');
+      }
+      document.body.style.overflow = 'hidden';
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function closeLightbox() {
+      if (typeof dialog.close === 'function') {
+        dialog.close();
+      } else {
+        dialog.removeAttribute('open');
+      }
+      document.body.style.overflow = '';
+      if (lastActiveTrigger) {
+        lastActiveTrigger.focus();
+      }
+    }
+
+    thumbs.forEach((thumb) => {
+      thumb.addEventListener('click', () => {
+        const idx = parseInt(thumb.getAttribute('data-index') || '0', 10);
+        openAt(idx, thumb);
+      });
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+    if (prevBtn) prevBtn.addEventListener('click', () => updateView(currentIndex - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => updateView(currentIndex + 1));
+
+    // Backdrop click
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) {
+        closeLightbox();
+      }
+    });
+
+    dialog.addEventListener('close', () => {
+      document.body.style.overflow = '';
+      if (lastActiveTrigger) lastActiveTrigger.focus();
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (!dialog.open) return;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        updateView(currentIndex - 1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        updateView(currentIndex + 1);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeLightbox();
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,420 @@
+@import 'tailwindcss';
+
+/* Self-hosted fonts (Fontsource). unicode-range ensures only needed subsets download. */
+@import '@fontsource/cormorant-garamond/latin-500.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
+@import '@fontsource/cormorant-garamond/latin-500-italic.css';
+@import '@fontsource-variable/inter/wght.css';
+
+/* ---------------------------------------------------------------
+   Brand tokens
+---------------------------------------------------------------- */
+:root {
+  --color-ink: #14121f; /* Midnight Ink – background */
+  --color-plum: #221e33; /* Deep Plum Slate – surfaces */
+  --color-plum-2: #2a2540; /* raised surface */
+  --color-gold: #c9a96e; /* Champagne Gold – primary accent */
+  --color-gold-soft: #dcc293;
+  --color-orchid: #a78bda; /* Soft Orchid – hover */
+  --color-teal: #7fc8c2; /* Moonstone Teal – tags, details */
+  --color-pearl: #f4f1ea; /* Pearl – text */
+  --color-mist: #a9a5b8; /* Mist – muted text */
+
+  --hairline: color-mix(in oklab, var(--color-gold) 32%, transparent);
+  --hairline-strong: color-mix(in oklab, var(--color-gold) 60%, transparent);
+  --prism: linear-gradient(90deg, var(--color-orchid), var(--color-teal), var(--color-gold));
+
+  --radius-card: 1.25rem;
+  --header-h: 4.5rem;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  color-scheme: dark;
+}
+
+/* Expose tokens to Tailwind utilities (bg-ink, text-gold, font-display …) */
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-plum: var(--color-plum);
+  --color-plum-2: var(--color-plum-2);
+  --color-gold: var(--color-gold);
+  --color-gold-soft: var(--color-gold-soft);
+  --color-orchid: var(--color-orchid);
+  --color-teal: var(--color-teal);
+  --color-pearl: var(--color-pearl);
+  --color-mist: var(--color-mist);
+
+  --font-display: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ---------------------------------------------------------------
+   Base
+---------------------------------------------------------------- */
+@layer base {
+  html {
+    background: var(--color-ink);
+    color: var(--color-pearl);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+    overflow-x: clip;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: clip;
+    line-height: 1.65;
+    /* very faint vignette for depth – not a big gradient background */
+    background:
+      radial-gradient(60rem 40rem at 85% -10%, color-mix(in oklab, var(--color-orchid) 7%, transparent), transparent 70%),
+      radial-gradient(50rem 30rem at -10% 10%, color-mix(in oklab, var(--color-teal) 4%, transparent), transparent 70%),
+      var(--color-ink);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.005em;
+    color: var(--color-pearl);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-orchid) 45%, transparent);
+    color: var(--color-pearl);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  img,
+  svg,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Components
+---------------------------------------------------------------- */
+@layer components {
+  .container-x {
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  .section-y {
+    padding-block: clamp(4rem, 9vw, 7.5rem);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+  .eyebrow::before {
+    content: '';
+    width: 1.75rem;
+    height: 1px;
+    background: var(--prism);
+  }
+
+  .lead {
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+    color: var(--color-mist);
+    line-height: 1.75;
+  }
+
+  /* Thin prism divider */
+  .prism-rule {
+    height: 1px;
+    width: 100%;
+    border: 0;
+    background: linear-gradient(90deg, transparent, var(--color-orchid) 20%, var(--color-teal) 50%, var(--color-gold) 80%, transparent);
+    opacity: 0.55;
+  }
+
+  /* Header & Navigation */
+  .header-glass {
+    background-color: color-mix(in oklab, var(--color-ink) 88%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .mobile-drawer {
+    background-color: var(--color-ink);
+    border-top: 1px solid var(--hairline);
+  }
+
+  /* Cards */
+  .card {
+    position: relative;
+    background: linear-gradient(180deg, color-mix(in oklab, var(--color-plum) 92%, white 2%), var(--color-plum));
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    transition:
+      border-color 0.4s var(--ease-out),
+      transform 0.4s var(--ease-out),
+      box-shadow 0.4s var(--ease-out);
+  }
+  .card-hover:hover,
+  .card-hover:focus-within {
+    border-color: color-mix(in oklab, var(--color-orchid) 55%, transparent);
+    transform: translateY(-3px);
+    box-shadow:
+      0 24px 48px -24px rgb(0 0 0 / 0.6),
+      0 0 0 1px color-mix(in oklab, var(--color-orchid) 12%, transparent);
+  }
+  /* prism hairline that appears on top edge on hover */
+  .card-hover::after {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 1px;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    background: var(--prism);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+  }
+  .card-hover:hover::after,
+  .card-hover:focus-within::after {
+    opacity: 1;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.8rem 1.6rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    transition:
+      background-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out),
+      border-color 0.3s var(--ease-out),
+      transform 0.3s var(--ease-out),
+      box-shadow 0.3s var(--ease-out);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn-primary {
+    background: var(--color-gold);
+    color: var(--color-ink);
+    border: 1px solid var(--color-gold);
+  }
+  .btn-primary:hover {
+    background: var(--color-gold-soft);
+    border-color: var(--color-gold-soft);
+    box-shadow: 0 10px 30px -12px color-mix(in oklab, var(--color-gold) 70%, transparent);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-pearl);
+    border: 1px solid var(--hairline-strong);
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-orchid);
+    color: var(--color-orchid);
+  }
+
+  /* Text link with prism underline on hover */
+  .link {
+    color: var(--color-gold);
+    background-image: var(--prism);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    padding-bottom: 2px;
+    transition:
+      background-size 0.45s var(--ease-out),
+      color 0.3s var(--ease-out);
+  }
+  .link:hover {
+    color: var(--color-orchid);
+    background-size: 100% 1px;
+  }
+
+  /* Chips / tags */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--color-teal);
+    border: 1px solid color-mix(in oklab, var(--color-teal) 35%, transparent);
+    background: color-mix(in oklab, var(--color-teal) 7%, transparent);
+    white-space: nowrap;
+  }
+  .chip-muted {
+    color: var(--color-mist);
+    border-color: color-mix(in oklab, var(--color-mist) 28%, transparent);
+    background: transparent;
+  }
+  .chip-gold {
+    color: var(--color-gold);
+    border-color: var(--hairline-strong);
+    background: color-mix(in oklab, var(--color-gold) 7%, transparent);
+  }
+
+  /* Long-form text from Markdown */
+  .prose-fp {
+    color: var(--color-mist);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+  .prose-fp > * + * {
+    margin-top: 1.1em;
+  }
+  .prose-fp strong {
+    color: var(--color-pearl);
+    font-weight: 600;
+  }
+  .prose-fp a {
+    color: var(--color-gold);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .prose-fp a:hover {
+    color: var(--color-orchid);
+  }
+
+  /* Form fields */
+  .field {
+    width: 100%;
+    background: color-mix(in oklab, var(--color-ink) 60%, var(--color-plum));
+    border: 1px solid var(--hairline);
+    border-radius: 0.85rem;
+    padding: 0.85rem 1rem;
+    color: var(--color-pearl);
+    font-size: 1rem;
+    transition:
+      border-color 0.25s var(--ease-out),
+      box-shadow 0.25s var(--ease-out);
+  }
+  .field::placeholder {
+    color: color-mix(in oklab, var(--color-mist) 70%, transparent);
+  }
+  .field:hover {
+    border-color: var(--hairline-strong);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-gold) 20%, transparent);
+  }
+  .field[aria-invalid='true'] {
+    border-color: #e59a9a;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 100;
+    padding: 0.6rem 1rem;
+    border-radius: 0.6rem;
+    background: var(--color-gold);
+    color: var(--color-ink);
+    font-weight: 600;
+    transition: top 0.2s;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Motion: subtle fade-in, only with JS and when motion is allowed
+---------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 0.6s var(--ease-out),
+      transform 0.6s var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .js [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @keyframes float-soft {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  .float-soft {
+    animation: float-soft 7s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: 0% 50%;
+    }
+    to {
+      background-position: 200% 50%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

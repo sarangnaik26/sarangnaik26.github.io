@@ -1,0 +1,131 @@
+---
+import { site, socials } from '@/config/site';
+import { liveSections } from '@/config/sections';
+import Icon from './Icon.astro';
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="mt-auto border-t border-[var(--hairline)] bg-[var(--color-ink)] relative overflow-hidden">
+  <!-- Subtle decorative top prism glow hairline -->
+  <div class="prism-rule opacity-40"></div>
+
+  <div class="container-x py-12 md:py-16">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 items-start">
+      <!-- Brand column -->
+      <div class="md:col-span-5 space-y-4">
+        <a href="/" class="inline-block transition-opacity hover:opacity-85" aria-label="FairyPrisme Home">
+          <img
+            src="/brand/logo-pearl.svg"
+            alt="FairyPrisme"
+            width="140"
+            height="55"
+            class="h-9 w-auto"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+        <p class="text-sm text-[var(--color-mist)] max-w-sm leading-relaxed">
+          {site.description}
+        </p>
+        <div class="pt-1">
+          <a
+            href={`mailto:${site.email}`}
+            class="inline-flex items-center gap-2 text-xs text-[var(--color-gold)] hover:text-[var(--color-orchid)] transition-colors"
+          >
+            <Icon name="mail" size={14} />
+            <span>{site.email}</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="md:col-span-3 space-y-3">
+        <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-gold)]">
+          Explore
+        </h2>
+        <ul class="space-y-2 text-sm text-[var(--color-mist)]" role="list">
+          <li>
+            <a href="/" class="hover:text-[var(--color-pearl)] transition-colors">Home</a>
+          </li>
+          {
+            liveSections.map((sec) => (
+              <li>
+                <a href={sec.href} class="hover:text-[var(--color-pearl)] transition-colors">
+                  {sec.label}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a href="/contact" class="hover:text-[var(--color-pearl)] transition-colors">Contact</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Socials & Legal Column -->
+      <div class="md:col-span-4 space-y-4">
+        <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-gold)]">
+          Connect & Legal
+        </h2>
+
+        {
+          socials.length > 0 ? (
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              {socials.map((social) => (
+                <a
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  class="w-9 h-9 rounded-full border border-[var(--hairline)] bg-[var(--color-plum)] text-[var(--color-mist)] hover:text-[var(--color-gold)] hover:border-[var(--color-gold)] inline-flex items-center justify-center transition-colors"
+                >
+                  <Icon name={social.key} size={16} />
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p class="text-xs text-[var(--color-mist)]">
+              Follow our journey as new games and releases take flight.
+            </p>
+          )
+        }
+
+        <div class="pt-2 text-xs text-[var(--color-mist)] space-y-1.5">
+          <div>
+            <a
+              href={site.privacyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-[var(--color-pearl)] inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Privacy Policy</span>
+              <Icon name="external" size={12} />
+            </a>
+          </div>
+          <div>
+            <a
+              href="https://sarangnaik26.github.io/FairyPrisme-docs/How-To-Use/Game/FloatyBirdReverse/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-[var(--color-pearl)] inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Floaty Bird Reverse Guide</span>
+              <Icon name="external" size={12} />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom copyright bar -->
+    <div class="mt-12 pt-6 border-t border-[var(--hairline)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--color-mist)]">
+      <p>
+        © {currentYear} {site.name}. All rights reserved.
+      </p>
+      <p class="text-[0.7rem] opacity-75">
+        Designed with quiet elegance.
+      </p>
+    </div>
+  </div>
+</footer>

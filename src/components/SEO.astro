@@ -1,0 +1,81 @@
+---
+import { site } from '@/config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  article?: boolean;
+  schema?: Record<string, unknown> | Array<Record<string, unknown>>;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = site.description,
+  image = site.ogImage,
+  imageAlt = site.name,
+  article = false,
+  schema,
+  noindex = false,
+} = Astro.props;
+
+const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://sarangnaik26.github.io').href;
+const ogImageUrl = new URL(image, Astro.site ?? 'https://sarangnaik26.github.io').href;
+
+// Default structured data for Organization & WebSite
+const defaultOrgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: site.name,
+  url: Astro.site?.href ?? 'https://sarangnaik26.github.io',
+  logo: new URL('/brand/logo-gold.svg', Astro.site ?? 'https://sarangnaik26.github.io').href,
+  email: site.email,
+  description: site.description,
+};
+
+const finalSchemas = schema
+  ? Array.isArray(schema)
+    ? [defaultOrgSchema, ...schema]
+    : [defaultOrgSchema, schema]
+  : [defaultOrgSchema];
+---
+
+<!-- Essential Meta -->
+<title>{pageTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalUrl} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+<meta name="theme-color" content="#14121F" />
+<meta name="color-scheme" content="dark" />
+
+<!-- Open Graph -->
+<meta property="og:site_name" content={site.name} />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:type" content={article ? 'article' : 'website'} />
+<meta property="og:image" content={ogImageUrl} />
+<meta property="og:image:alt" content={imageAlt} />
+<meta property="og:locale" content={site.locale} />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={pageTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageUrl} />
+<meta name="twitter:image:alt" content={imageAlt} />
+
+<!-- Favicons & App Icons -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+<!-- Structured Data -->
+{
+  finalSchemas.map((s) => (
+    <script type="application/ld+json" set:html={JSON.stringify(s)} />
+  ))
+}

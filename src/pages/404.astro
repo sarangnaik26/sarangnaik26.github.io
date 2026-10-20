@@ -1,0 +1,43 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/Icon.astro';
+---
+
+<BaseLayout
+  title="Page Not Found (404)"
+  description="The requested page could not be found on FairyPrisme."
+  noindex={true}
+>
+  <div class="section-y flex-1 flex items-center justify-center min-h-[65vh]">
+    <div class="container-x text-center max-w-xl space-y-8" data-reveal>
+      <!-- Subtle prism mark -->
+      <div class="flex justify-center">
+        <div class="w-16 h-16 rounded-3xl border border-[var(--hairline-strong)] bg-[var(--color-plum)] text-[var(--color-gold)] flex items-center justify-center shadow-xl">
+          <Icon name="prism" size={30} />
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <span class="eyebrow">Lost in the Prism</span>
+        <h1 class="text-5xl sm:text-7xl font-normal tracking-tight">
+          404
+        </h1>
+        <p class="lead text-base sm:text-lg">
+          This path has wandered beyond our maps. The page you're searching for may have flown elsewhere or does not yet exist.
+        </p>
+      </div>
+
+      <div class="prism-rule opacity-40 max-w-xs mx-auto"></div>
+
+      <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+        <a href="/" class="btn btn-primary">
+          <span>Return Home</span>
+          <Icon name="arrowRight" size={16} />
+        </a>
+        <a href="/games" class="btn btn-ghost">
+          <span>Explore Games</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

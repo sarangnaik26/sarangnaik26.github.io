@@ -1,0 +1,200 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site } from '@/config/site';
+import { sections } from '@/config/sections';
+import { getCollection } from 'astro:content';
+import GameCard from '@/components/GameCard.astro';
+import Icon from '@/components/Icon.astro';
+
+// Fetch all live games from the content collection
+const allGames = await getCollection('games', ({ data }) => data.status === 'live');
+const sortedGames = allGames.sort((a, b) => (a.data.order ?? 100) - (b.data.order ?? 100));
+const featuredGame = sortedGames.find((g) => g.data.featured) ?? sortedGames[0];
+
+const whatWeMakeSections = sections.filter((s) => s.showInWhatWeMake);
+---
+
+<BaseLayout
+  title="Home"
+  description="FairyPrisme is a small independent studio crafting elegant mobile games, apps, and stories with quiet magic."
+>
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden pt-16 md:pt-28 pb-16 md:pb-24 border-b border-[var(--hairline)]">
+    <!-- Subtle background feather/prism glow decoration -->
+    <div
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[34rem] h-[34rem] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-orchid)_10%,transparent)_0%,transparent_70%)] pointer-events-none blur-3xl -z-10"
+      aria-hidden="true"
+    />
+
+    <div class="container-x text-center max-w-4xl space-y-8" data-reveal>
+      <!-- Small boutique eyebrow with prism rule -->
+      <div class="flex justify-center">
+        <span class="eyebrow">Independent Studio</span>
+      </div>
+
+      <!-- Main Heading: Cormorant Garamond -->
+      <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal leading-[1.05] tracking-tight">
+        Small worlds, crafted with <span class="italic font-light text-[var(--color-gold)]">quiet magic</span>.
+      </h1>
+
+      <!-- Subtitle description -->
+      <p class="lead max-w-2xl mx-auto text-base sm:text-lg md:text-xl">
+        FairyPrisme is a small studio making mobile games and apps designed to delight in spare moments — with novels, ebooks and gentle stories quietly taking shape.
+      </p>
+
+      <!-- Call to Actions -->
+      <div class="pt-2 flex flex-wrap items-center justify-center gap-4">
+        <a href="/games" class="btn btn-primary shadow-lg shadow-black/20">
+          <span>Explore Our Games</span>
+          <Icon name="arrowRight" size={16} />
+        </a>
+        <a href="/contact" class="btn btn-ghost">
+          <span>Get in Touch</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Game Showcase Section -->
+  {
+    featuredGame && (
+      <section class="section-y border-b border-[var(--hairline)] relative">
+        <div class="container-x space-y-10">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4" data-reveal>
+            <div>
+              <span class="eyebrow">Available Now</span>
+              <h2 class="text-3xl sm:text-4xl md:text-5xl mt-2">
+                Featured Release
+              </h2>
+            </div>
+            <a href="/games" class="link text-sm inline-flex items-center gap-1 font-medium">
+              <span>View all games</span>
+              <Icon name="arrowRight" size={14} />
+            </a>
+          </div>
+
+          <div data-reveal style="--reveal-delay: 100ms;">
+            <GameCard game={featuredGame} featured={true} />
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- What We Make Section (Live Games + Coming Soon Novels & Ebooks) -->
+  <section class="section-y border-b border-[var(--hairline)] bg-[color-mix(in_oklab,var(--color-ink)_92%,var(--color-plum))]">
+    <div class="container-x space-y-12">
+      <div class="max-w-xl space-y-3" data-reveal>
+        <span class="eyebrow">Our Realms</span>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl">
+          What We Make
+        </h2>
+        <p class="text-sm sm:text-base text-[var(--color-mist)] leading-relaxed">
+          From pocket-sized arcade diversions to long-form storytelling, we craft experiences that respect your time and attention.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-reveal style="--reveal-delay: 150ms;">
+        {
+          whatWeMakeSections.map((sec) => {
+            const isLive = sec.enabled;
+            return (
+              <div
+                class:list={[
+                  'card p-8 flex flex-col justify-between relative overflow-hidden transition-all duration-300',
+                  isLive ? 'card-hover border-[var(--hairline-strong)]' : 'border-[var(--hairline)] opacity-85',
+                ]}
+              >
+                <!-- Top icon + status badge -->
+                <div>
+                  <div class="flex items-center justify-between mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-[var(--color-plum)] border border-[var(--hairline-strong)] text-[var(--color-gold)] flex items-center justify-center">
+                      <Icon name={sec.icon} size={22} />
+                    </div>
+
+                    {isLive ? (
+                      <span class="chip-gold text-[0.68rem] tracking-widest uppercase font-semibold py-0.5 px-2.5 rounded-full border">
+                        Live Now
+                      </span>
+                    ) : (
+                      <span class="chip-muted text-[0.68rem] tracking-widest uppercase py-0.5 px-2.5 rounded-full border">
+                        Coming Soon
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 class="text-2xl sm:text-3xl font-normal text-[var(--color-pearl)] mb-2">
+                    {sec.label}
+                  </h3>
+                  <p class="text-sm text-[var(--color-mist)] leading-relaxed">
+                    {sec.blurb}
+                  </p>
+                </div>
+
+                <!-- Bottom action or status -->
+                <div class="pt-8 mt-6 border-t border-[var(--hairline)]">
+                  {isLive ? (
+                    <a
+                      href={sec.href}
+                      class="inline-flex items-center gap-1.5 text-xs text-[var(--color-gold)] font-medium link"
+                    >
+                      <span>Explore {sec.label}</span>
+                      <Icon name="arrowRight" size={12} />
+                    </a>
+                  ) : (
+                    <span class="text-xs text-[var(--color-mist)]/80 italic">
+                      In thoughtful preparation
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- About Strip Section -->
+  <section class="section-y">
+    <div class="container-x">
+      <div
+        class="card p-8 sm:p-14 relative overflow-hidden bg-gradient-to-br from-[var(--color-plum)] to-[var(--color-ink)] border-[var(--hairline-strong)]"
+        data-reveal
+      >
+        <div class="max-w-3xl space-y-6">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[var(--color-gold)]"></span>
+            <span class="eyebrow !m-0">The Studio</span>
+          </div>
+
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-normal text-[var(--color-pearl)] leading-tight">
+            Crafted with intention, simplicity, and a quiet sense of wonder.
+          </h2>
+
+          <div class="space-y-4 text-base sm:text-lg text-[var(--color-mist)] leading-relaxed">
+            <p>
+              In a crowded world of noisy notifications and infinite feeds, FairyPrisme is founded on a simpler desire: to craft little worlds that feel good to spend time in.
+            </p>
+            <p>
+              Whether it's an arcade game that turns gravity upside down or a book written slowly for calm evenings, we build things meant to charm rather than clamor.
+            </p>
+          </div>
+
+          <div class="pt-4 flex flex-wrap items-center gap-6 text-sm">
+            <a href="/contact" class="btn btn-primary">
+              <span>Write to FairyPrisme</span>
+              <Icon name="mail" size={16} />
+            </a>
+            <a
+              href={`mailto:${site.email}`}
+              class="text-xs sm:text-sm text-[var(--color-gold)] link"
+            >
+              {site.email}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

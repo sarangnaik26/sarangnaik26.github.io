@@ -1,0 +1,191 @@
+---
+import { navItems } from '@/config/sections';
+import Icon from './Icon.astro';
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) => {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+};
+---
+
+<header
+  id="site-header"
+  class="sticky top-0 z-50 w-full border-b border-[var(--hairline)] header-glass transition-colors duration-300"
+>
+  <div class="container-x flex h-[var(--header-h)] items-center justify-between">
+    <!-- Brand Logo -->
+    <a
+      href="/"
+      class="group inline-flex items-center gap-2.5 transition-transform duration-300 hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-gold)]"
+      aria-label="FairyPrisme Home"
+    >
+      <img
+        src="/brand/logo-gold.svg"
+        alt="FairyPrisme"
+        width="154"
+        height="60"
+        class="h-10 w-auto transition-opacity duration-300 group-hover:opacity-90"
+        loading="eager"
+        decoding="async"
+      />
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="hidden md:flex items-center gap-1.5" aria-label="Main Navigation">
+      {
+        navItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <a
+              href={item.href}
+              class:list={[
+                'relative px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-200 rounded-full',
+                active
+                  ? 'text-[var(--color-pearl)] bg-[var(--color-plum)] border border-[var(--hairline-strong)]'
+                  : 'text-[var(--color-mist)] hover:text-[var(--color-pearl)] hover:bg-[var(--color-plum)]/50',
+              ]}
+              aria-current={active ? 'page' : undefined}
+            >
+              {item.label}
+              {active && (
+                <span
+                  class="absolute -bottom-[calc(1.25rem-1px)] left-1/2 -translate-x-1/2 h-[2px] w-6 rounded-full bg-[var(--prism)] pointer-events-none"
+                  aria-hidden="true"
+                />
+              )}
+            </a>
+          );
+        })
+      }
+    </nav>
+
+    <!-- Mobile Menu Toggle Button -->
+    <button
+      id="mobile-nav-toggle"
+      type="button"
+      class="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-full border border-[var(--hairline)] bg-[var(--color-plum)] text-[var(--color-pearl)] transition-colors hover:border-[var(--color-orchid)] hover:text-[var(--color-orchid)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-gold)]"
+      aria-expanded="false"
+      aria-controls="mobile-nav-menu"
+      aria-label="Open menu"
+    >
+      <span id="menu-icon-open">
+        <Icon name="menu" size={22} />
+      </span>
+      <span id="menu-icon-close" class="hidden">
+        <Icon name="close" size={22} />
+      </span>
+    </button>
+  </div>
+
+  <!-- Mobile Drawer / Overlay -->
+  <div
+    id="mobile-nav-menu"
+    class="md:hidden fixed inset-x-0 top-[var(--header-h)] bottom-0 mobile-drawer transition-all duration-300 opacity-0 pointer-events-none -translate-y-2 flex flex-col justify-between p-6 overflow-y-auto z-50 shadow-2xl"
+    aria-hidden="true"
+  >
+    <div class="space-y-3 pt-2">
+      <div class="text-[0.72rem] uppercase tracking-[0.2em] text-[var(--color-gold)] font-medium mb-3 px-1">
+        Navigation
+      </div>
+      {
+        navItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <a
+              href={item.href}
+              class:list={[
+                'flex items-center justify-between px-5 py-4 rounded-xl text-lg font-medium transition-all duration-200 border',
+                active
+                  ? 'text-[var(--color-pearl)] bg-[var(--color-plum)] border-[var(--hairline-strong)]'
+                  : 'text-[var(--color-mist)] border-[var(--hairline)] bg-[var(--color-plum)]/40 hover:text-[var(--color-pearl)] hover:bg-[var(--color-plum)]',
+              ]}
+              aria-current={active ? 'page' : undefined}
+            >
+              <span>{item.label}</span>
+              {active && <span class="w-2 h-2 rounded-full bg-[var(--color-gold)]" />}
+            </a>
+          );
+        })
+      }
+    </div>
+
+    <div class="pt-6 border-t border-[var(--hairline)]">
+      <p class="text-xs text-[var(--color-mist)] leading-relaxed">
+        Small independent studio crafting games, apps & stories.
+      </p>
+      <div class="mt-4 flex items-center justify-between text-xs text-[var(--color-gold)]">
+        <a href="mailto:fairyprisme@gmail.com" class="link">fairyprisme@gmail.com</a>
+        <span class="text-[var(--color-mist)]">v1.0</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  function initHeader() {
+    const toggle = document.getElementById('mobile-nav-toggle');
+    const menu = document.getElementById('mobile-nav-menu');
+    const iconOpen = document.getElementById('menu-icon-open');
+    const iconClose = document.getElementById('menu-icon-close');
+
+    if (!toggle || !menu || !iconOpen || !iconClose) return;
+
+    const navToggle = toggle;
+    const navMenu = menu;
+    const openIcon = iconOpen;
+    const closeIcon = iconClose;
+
+    let isOpen = false;
+
+    function setMenuState(open: boolean) {
+      isOpen = open;
+      navToggle.setAttribute('aria-expanded', String(open));
+      navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      navMenu.setAttribute('aria-hidden', String(!open));
+
+      if (open) {
+        navMenu.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+        navMenu.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+        openIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      } else {
+        navMenu.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+        navMenu.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+        openIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    }
+
+    toggle.addEventListener('click', () => {
+      setMenuState(!isOpen);
+    });
+
+    // Close on escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        setMenuState(false);
+        toggle.focus();
+      }
+    });
+
+    // Close when clicking a nav link
+    menu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        setMenuState(false);
+      });
+    });
+
+    // Close when window resized to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 768 && isOpen) {
+        setMenuState(false);
+      }
+    });
+  }
+
+  initHeader();
+  document.addEventListener('astro:after-swap', initHeader);
+</script>

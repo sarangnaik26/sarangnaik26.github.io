@@ -1,0 +1,64 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import GameCard from '@/components/GameCard.astro';
+import Icon from '@/components/Icon.astro';
+
+const allGames = await getCollection('games');
+// Sort by order or date
+const sortedGames = allGames.sort((a, b) => (a.data.order ?? 100) - (b.data.order ?? 100));
+---
+
+<BaseLayout
+  title="Games"
+  description="Discover pocket-sized mobile arcade games crafted by FairyPrisme with simple one-tap controls and gentle gravity twists."
+>
+  <div class="section-y">
+    <div class="container-x space-y-12">
+      <!-- Page Header -->
+      <header class="max-w-2xl space-y-4" data-reveal>
+        <span class="eyebrow">Interactive Works</span>
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-normal">
+          Games by FairyPrisme
+        </h1>
+        <p class="lead text-base sm:text-lg">
+          Pocket-sized games with intuitive controls, thoughtful mechanics, and a touch of whimsy. Designed to pick up in seconds and enjoy at your own pace.
+        </p>
+      </header>
+
+      <!-- Games Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch" data-reveal style="--reveal-delay: 100ms;">
+        {
+          sortedGames.map((game) => (
+            <GameCard game={game} />
+          ))
+        }
+
+        <!-- "More coming soon" card styled with intentional boutique polish -->
+        <div class="card p-8 sm:p-10 flex flex-col justify-between border-dashed border-[var(--hairline-strong)] bg-[color-mix(in_oklab,var(--color-plum)_40%,transparent)]">
+          <div class="space-y-4">
+            <div class="w-14 h-14 rounded-2xl border border-[var(--hairline)] bg-[var(--color-plum)] text-[var(--color-gold)] flex items-center justify-center">
+              <Icon name="sparkle" size={24} />
+            </div>
+            <div class="space-y-2">
+              <span class="chip-muted text-[0.68rem] tracking-wider uppercase py-0.5 px-2.5 rounded-full border">
+                In Incubation
+              </span>
+              <h3 class="text-2xl sm:text-3xl font-normal text-[var(--color-pearl)]">
+                More Worlds Taking Shape
+              </h3>
+              <p class="text-sm text-[var(--color-mist)] leading-relaxed">
+                We take our time designing games that feel rewarding to play. New arcade experiments and relaxing puzzle concepts are actively in development.
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-8 mt-6 border-t border-[var(--hairline)] flex items-center justify-between text-xs text-[var(--color-mist)]">
+            <span>Have an idea or feedback?</span>
+            <a href="/contact" class="link text-[var(--color-gold)] font-medium">Let us know →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

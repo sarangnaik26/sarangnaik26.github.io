@@ -1,0 +1,62 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { sections } from '@/config/sections';
+import Icon from '@/components/Icon.astro';
+
+export async function getStaticPaths() {
+  // Only build pages for enabled sections (excluding 'games' which has its own custom catalog page)
+  const activeGenericSections = sections.filter((s) => s.enabled && s.id !== 'games');
+  return activeGenericSections.map((sec) => ({
+    params: { section: sec.id },
+    props: { section: sec },
+  }));
+}
+
+const { section } = Astro.props;
+---
+
+<BaseLayout
+  title={section.label}
+  description={section.blurb}
+>
+  <div class="section-y">
+    <div class="container-x max-w-3xl space-y-10" data-reveal>
+      <nav class="flex items-center gap-2 text-xs text-[var(--color-mist)]" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-[var(--color-pearl)] transition-colors">Home</a>
+        <span>/</span>
+        <span class="text-[var(--color-gold)]" aria-current="page">{section.label}</span>
+      </nav>
+
+      <div class="space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-[var(--color-plum)] border border-[var(--hairline-strong)] text-[var(--color-gold)] flex items-center justify-center">
+          <Icon name={section.icon} size={24} />
+        </div>
+        <span class="eyebrow">Studio Publication</span>
+        <h1 class="text-4xl sm:text-6xl font-normal">
+          {section.label}
+        </h1>
+        <p class="lead text-base sm:text-xl">
+          {section.blurb}
+        </p>
+      </div>
+
+      <div class="card p-8 sm:p-10 border-[var(--hairline-strong)] bg-[var(--color-plum)] space-y-6">
+        <h2 class="text-2xl font-normal text-[var(--color-pearl)]">
+          Quietly in the Works
+        </h2>
+        <p class="text-sm sm:text-base text-[var(--color-mist)] leading-relaxed">
+          {section.intro || 'Our earliest titles are currently being drafted and edited. As an independent imprint, we prioritize atmosphere and craft above speed.'}
+        </p>
+        <div class="pt-2 flex flex-wrap items-center gap-4">
+          <a href="/contact" class="btn btn-primary text-xs">
+            <span>Inquire or Stay Updated</span>
+            <Icon name="arrowRight" size={14} />
+          </a>
+          <a href="/games" class="btn btn-ghost text-xs">
+            <span>Discover Games in the Meantime</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

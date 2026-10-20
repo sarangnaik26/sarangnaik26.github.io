@@ -1,0 +1,358 @@
+---
+import { site } from '@/config/site';
+import Icon from './Icon.astro';
+
+const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY || '';
+---
+
+<div class="card p-6 sm:p-10 relative overflow-hidden" id="contact-card">
+  <!-- Subtle top accent -->
+  <div class="prism-rule opacity-30 mb-8"></div>
+
+  <!-- Success Notification Box -->
+  <div
+    id="form-success"
+    class="hidden p-8 rounded-2xl bg-[color-mix(in_oklab,var(--color-plum)_90%,transparent)] border border-[var(--color-gold)] text-center space-y-4 animate-fadeIn"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="w-14 h-14 mx-auto rounded-full bg-[color-mix(in_oklab,var(--color-gold)_15%,transparent)] border border-[var(--color-gold)] text-[var(--color-gold)] flex items-center justify-center">
+      <Icon name="check" size={28} />
+    </div>
+    <h3 class="text-2xl font-normal text-[var(--color-pearl)]">
+      Message received with care
+    </h3>
+    <p class="text-sm text-[var(--color-mist)] max-w-md mx-auto leading-relaxed">
+      Thank you for writing to us. We read every thoughtful note and will reply to <span id="success-email-echo" class="text-[var(--color-pearl)] font-medium">your email</span> shortly.
+    </p>
+    <button
+      type="button"
+      id="send-another-btn"
+      class="btn btn-ghost text-xs tracking-wider mt-2"
+    >
+      Send another note
+    </button>
+  </div>
+
+  <!-- Error Notification Box -->
+  <div
+    id="form-error-banner"
+    class="hidden mb-6 p-5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-sm text-rose-200 space-y-3"
+    role="alert"
+    aria-live="assertive"
+  >
+    <div class="flex items-start gap-3">
+      <div class="shrink-0 mt-0.5 text-rose-400">
+        <Icon name="info" size={18} />
+      </div>
+      <div class="space-y-1">
+        <p class="font-medium text-rose-100" id="error-message">
+          We couldn't deliver the note through the web form right now.
+        </p>
+        <p class="text-xs text-rose-200/80">
+          No worries — you can send it directly to our mailbox with a single click.
+        </p>
+      </div>
+    </div>
+    <a
+      id="mailto-fallback-link"
+      href={`mailto:${site.email}?subject=Hello%20FairyPrisme`}
+      class="btn btn-primary text-xs py-2 px-4 w-full sm:w-auto inline-flex"
+    >
+      <Icon name="mail" size={14} />
+      <span>Open in your email app</span>
+    </a>
+  </div>
+
+  <!-- Main Form -->
+  <form id="contact-form" class="space-y-6" novalidate>
+    <!-- Web3Forms API Key -->
+    <input type="hidden" name="access_key" value={accessKey} id="web3forms-key" />
+    <input type="hidden" name="from_name" value="FairyPrisme Website" />
+    <input type="hidden" name="subject" id="hidden-subject" value="New note from FairyPrisme website" />
+
+    <!-- Anti-spam Honeypot -->
+    <div class="hidden" aria-hidden="true">
+      <label for="fp_hp_field">Do not fill this field</label>
+      <input type="text" name="botcheck" id="fp_hp_field" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <!-- Name & Email fields in responsive 2 cols -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div class="space-y-2">
+        <label for="contact-name" class="block text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-gold)]">
+          Your Name <span class="text-rose-400" aria-hidden="true">*</span>
+        </label>
+        <input
+          type="text"
+          id="contact-name"
+          name="name"
+          required
+          autocomplete="name"
+          placeholder="e.g. Rowan Vance"
+          class="field"
+          aria-describedby="name-error"
+        />
+        <p id="name-error" class="hidden text-xs text-rose-300 pt-1" role="alert"></p>
+      </div>
+
+      <div class="space-y-2">
+        <label for="contact-email" class="block text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-gold)]">
+          Your Email <span class="text-rose-400" aria-hidden="true">*</span>
+        </label>
+        <input
+          type="email"
+          id="contact-email"
+          name="email"
+          required
+          autocomplete="email"
+          placeholder="e.g. rowan@example.com"
+          class="field"
+          aria-describedby="email-error"
+        />
+        <p id="email-error" class="hidden text-xs text-rose-300 pt-1" role="alert"></p>
+      </div>
+    </div>
+
+    <!-- Subject field -->
+    <div class="space-y-2">
+      <label for="contact-subject" class="block text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-gold)]">
+        Subject <span class="text-rose-400" aria-hidden="true">*</span>
+      </label>
+      <input
+        type="text"
+        id="contact-subject"
+        name="custom_subject"
+        required
+        placeholder="e.g. Question about Floaty Bird Reverse, or just saying hello"
+        class="field"
+        aria-describedby="subject-error"
+      />
+      <p id="subject-error" class="hidden text-xs text-rose-300 pt-1" role="alert"></p>
+    </div>
+
+    <!-- Message field -->
+    <div class="space-y-2">
+      <label for="contact-message" class="block text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-gold)]">
+        Message <span class="text-rose-400" aria-hidden="true">*</span>
+      </label>
+      <textarea
+        id="contact-message"
+        name="message"
+        rows="6"
+        required
+        placeholder="Write your thoughts, feedback or inquiries here..."
+        class="field resize-y min-h-[140px]"
+        aria-describedby="message-error"
+      ></textarea>
+      <p id="message-error" class="hidden text-xs text-rose-300 pt-1" role="alert"></p>
+    </div>
+
+    <!-- Submit row -->
+    <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <button
+        type="submit"
+        id="submit-button"
+        class="btn btn-primary w-full sm:w-auto"
+      >
+        <span id="btn-text">Send Message</span>
+        <span id="btn-spinner" class="hidden inline-flex items-center gap-2">
+          <svg class="animate-spin h-4 w-4 text-[var(--color-ink)]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Sending…
+        </span>
+        <Icon name="arrowRight" size={16} />
+      </button>
+
+      <span class="text-xs text-[var(--color-mist)] text-center sm:text-right">
+        Or email us directly at <a href={`mailto:${site.email}`} class="link">{site.email}</a>
+      </span>
+    </div>
+  </form>
+</div>
+
+<script is:inline define:vars={{ directEmail: site.email }}>
+  (function () {
+    const form = document.getElementById('contact-form');
+    const successBox = document.getElementById('form-success');
+    const errorBanner = document.getElementById('form-error-banner');
+    const errorMsg = document.getElementById('error-message');
+    const mailtoLink = document.getElementById('mailto-fallback-link');
+    const successEmail = document.getElementById('success-email-echo');
+    const sendAnotherBtn = document.getElementById('send-another-btn');
+    const submitBtn = document.getElementById('submit-button');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    const keyInput = document.getElementById('web3forms-key');
+
+    if (!form || !submitBtn) return;
+
+    function buildMailto() {
+      const name = (document.getElementById('contact-name')?.value || '').trim();
+      const email = (document.getElementById('contact-email')?.value || '').trim();
+      const subj = (document.getElementById('contact-subject')?.value || 'Inquiry from FairyPrisme site').trim();
+      const msg = (document.getElementById('contact-message')?.value || '').trim();
+
+      const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${msg}`;
+      return `mailto:${encodeURIComponent(directEmail)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+    }
+
+    function showError(customText) {
+      if (errorBanner) {
+        errorBanner.classList.remove('hidden');
+        if (customText && errorMsg) errorMsg.textContent = customText;
+      }
+      if (mailtoLink) {
+        mailtoLink.href = buildMailto();
+      }
+    }
+
+    function hideError() {
+      if (errorBanner) errorBanner.classList.add('hidden');
+    }
+
+    function setFieldError(fieldId, errId, message) {
+      const input = document.getElementById(fieldId);
+      const err = document.getElementById(errId);
+      if (!input || !err) return;
+      if (message) {
+        input.setAttribute('aria-invalid', 'true');
+        err.textContent = message;
+        err.classList.remove('hidden');
+      } else {
+        input.removeAttribute('aria-invalid');
+        err.textContent = '';
+        err.classList.add('hidden');
+      }
+    }
+
+    function validate() {
+      let isValid = true;
+      const nameInput = document.getElementById('contact-name');
+      const emailInput = document.getElementById('contact-email');
+      const subjInput = document.getElementById('contact-subject');
+      const msgInput = document.getElementById('contact-message');
+
+      if (!nameInput.value.trim()) {
+        setFieldError('contact-name', 'name-error', 'Please let us know your name.');
+        isValid = false;
+      } else {
+        setFieldError('contact-name', 'name-error', '');
+      }
+
+      const emailVal = emailInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailVal) {
+        setFieldError('contact-email', 'email-error', 'Please provide your email address.');
+        isValid = false;
+      } else if (!emailRegex.test(emailVal)) {
+        setFieldError('contact-email', 'email-error', 'Please enter a valid email address.');
+        isValid = false;
+      } else {
+        setFieldError('contact-email', 'email-error', '');
+      }
+
+      if (!subjInput.value.trim()) {
+        setFieldError('contact-subject', 'subject-error', 'Please provide a short subject.');
+        isValid = false;
+      } else {
+        setFieldError('contact-subject', 'subject-error', '');
+      }
+
+      if (!msgInput.value.trim()) {
+        setFieldError('contact-message', 'message-error', 'Please write your message.');
+        isValid = false;
+      } else if (msgInput.value.trim().length < 8) {
+        setFieldError('contact-message', 'message-error', 'Your message is a little short.');
+        isValid = false;
+      } else {
+        setFieldError('contact-message', 'message-error', '');
+      }
+
+      return isValid;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      if (!validate()) {
+        return;
+      }
+
+      // Check honeypot
+      const botField = document.getElementById('fp_hp_field');
+      if (botField && botField.value) {
+        // Silently treat as success for spam bots
+        form.classList.add('hidden');
+        if (successBox) successBox.classList.remove('hidden');
+        return;
+      }
+
+      const hasKey = keyInput && keyInput.value && keyInput.value.trim().length > 0;
+
+      // If no API key is provided, gracefully invoke the mailto client directly
+      if (!hasKey) {
+        window.location.href = buildMailto();
+        showError('No form key configured yet. We opened your email client so you can send your message directly!');
+        return;
+      }
+
+      // Sync hidden subject with custom subject
+      const customSubj = document.getElementById('contact-subject')?.value || '';
+      const hiddenSubj = document.getElementById('hidden-subject');
+      if (hiddenSubj && customSubj) {
+        hiddenSubj.value = `[FairyPrisme] ${customSubj}`;
+      }
+
+      // Submission UI state
+      submitBtn.disabled = true;
+      btnText.classList.add('hidden');
+      btnSpinner.classList.remove('hidden');
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(Object.fromEntries(formData)),
+        });
+
+        const result = await response.json();
+
+        if (response.status === 200 && result.success) {
+          form.classList.add('hidden');
+          if (successEmail) {
+            successEmail.textContent = formData.get('email') || 'your email';
+          }
+          if (successBox) {
+            successBox.classList.remove('hidden');
+          }
+        } else {
+          showError(result.message || 'The server could not send the form.');
+        }
+      } catch (err) {
+        showError('Network connectivity issue. Please try again or use the email link below.');
+      } finally {
+        submitBtn.disabled = false;
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+      }
+    });
+
+    if (sendAnotherBtn) {
+      sendAnotherBtn.addEventListener('click', () => {
+        form.reset();
+        form.classList.remove('hidden');
+        if (successBox) successBox.classList.add('hidden');
+        hideError();
+      });
+    }
+  })();
+</script>

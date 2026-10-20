@@ -1,0 +1,401 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Lightbox from '@/components/Lightbox.astro';
+import Icon from '@/components/Icon.astro';
+
+export async function getStaticPaths() {
+  const games = await getCollection('games');
+  return games.map((game) => ({
+    params: { slug: game.id },
+    props: { game },
+  }));
+}
+
+const { game } = Astro.props;
+const { data } = game;
+const { Content } = await render(game);
+
+const formattedDate = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+}).format(data.details.updated);
+
+// Structured data for Google Search (VideoGame / SoftwareApplication)
+const gameSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoGame',
+  name: data.title,
+  description: data.summary,
+  operatingSystem: data.platforms.join(', '),
+  applicationCategory: 'GameApplication',
+  genre: data.genre,
+  gamePlatform: data.platforms,
+  offers: {
+    '@type': 'Offer',
+    price: data.price === 'Free' ? '0' : data.price,
+    priceCurrency: 'USD',
+  },
+  author: {
+    '@type': 'Organization',
+    name: data.details.developer,
+    url: Astro.site?.href ?? 'https://sarangnaik26.github.io',
+  },
+  url: Astro.url.href,
+};
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.summary}
+  schema={gameSchema}
+>
+  <!-- Game Hero Header -->
+  <section class="border-b border-[var(--hairline)] pt-12 md:pt-16 pb-12 bg-gradient-to-b from-[var(--color-plum)]/40 to-transparent">
+    <div class="container-x">
+      <!-- Breadcrumb navigation -->
+      <nav class="flex items-center gap-2 text-xs text-[var(--color-mist)] mb-8" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-[var(--color-pearl)] transition-colors">Home</a>
+        <span>/</span>
+        <a href="/games" class="hover:text-[var(--color-pearl)] transition-colors">Games</a>
+        <span>/</span>
+        <span class="text-[var(--color-gold)]" aria-current="page">{data.title}</span>
+      </nav>
+
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8" data-reveal>
+        <!-- Icon & Main Title Header -->
+        <div class="flex items-start sm:items-center gap-5 sm:gap-6">
+          <Image
+            src={data.icon}
+            alt={data.iconAlt}
+            width={120}
+            height={120}
+            class="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl border-2 border-[var(--hairline-strong)] shadow-2xl object-cover shrink-0"
+            loading="eager"
+            decoding="async"
+          />
+
+          <div class="space-y-3">
+            <h1 class="text-3xl sm:text-5xl md:text-6xl font-normal text-[var(--color-pearl)]">
+              {data.title}
+            </h1>
+            <p class="text-base sm:text-lg text-[var(--color-gold)] font-medium">
+              {data.tagline}
+            </p>
+
+            <!-- Metadata Chips -->
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <span class="chip-gold text-xs py-1 px-3">
+                {data.genre}
+              </span>
+              <span class="chip chip-muted text-xs py-1 px-3">
+                {data.contentRating}
+              </span>
+              {data.containsAds && (
+                <span class="chip chip-muted text-xs py-1 px-3">
+                  Contains ads
+                </span>
+              )}
+              {data.inAppPurchases && (
+                <span class="chip chip-muted text-xs py-1 px-3">
+                  In-app purchases
+                </span>
+              )}
+              {data.platforms.map((plat) => (
+                <span class="chip text-xs py-1 px-3">
+                  <Icon name={plat === 'Android' ? 'android' : 'gamepad'} size={14} />
+                  <span>{plat}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <!-- Call to Action / Get on Google Play button -->
+        <div class="shrink-0 w-full sm:w-auto">
+          {data.stores.googlePlay ? (
+            <a
+              href={data.stores.googlePlay}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-primary w-full sm:w-auto text-sm px-6 py-4 shadow-xl hover:shadow-[0_0_30px_rgba(201,169,110,0.3)] transition-shadow"
+            >
+              <Icon name="googlePlay" size={20} />
+              <div class="text-left">
+                <span class="block text-[0.65rem] tracking-wider uppercase opacity-80 leading-none">Get it on</span>
+                <span class="block text-sm font-semibold tracking-wide leading-tight">Google Play</span>
+              </div>
+            </a>
+          ) : (
+            <span class="chip-muted px-4 py-3 rounded-xl text-sm">
+              Available soon on mobile
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshot Gallery Section with Lightbox -->
+  {data.screenshots.length > 0 && (
+    <section class="section-y border-b border-[var(--hairline)]">
+      <div class="container-x space-y-6" data-reveal>
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="eyebrow">Visual Tour</span>
+            <h2 class="text-2xl sm:text-3xl font-normal mt-1">Screenshots</h2>
+          </div>
+          <span class="text-xs text-[var(--color-mist)] hidden sm:inline">
+            Click any image to enlarge
+          </span>
+        </div>
+
+        <Lightbox screenshots={data.screenshots} gameTitle={data.title} />
+      </div>
+    </section>
+  )}
+
+  <!-- Two Column Layout: Main Details + Sidebar Info -->
+  <section class="section-y border-b border-[var(--hairline)]">
+    <div class="container-x grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+      <!-- Main Content Column -->
+      <div class="lg:col-span-8 space-y-16">
+        <!-- About the Game (from Markdown content) -->
+        <div class="space-y-4" data-reveal>
+          <span class="eyebrow">Overview</span>
+          <h2 class="text-3xl sm:text-4xl font-normal">About the Game</h2>
+          <div class="prose-fp pt-2">
+            <Content />
+          </div>
+        </div>
+
+        <!-- 3 Game Modes Section -->
+        {data.modes.length > 0 && (
+          <div class="space-y-6" data-reveal>
+            <div>
+              <span class="eyebrow">Master the Physics</span>
+              <h2 class="text-3xl sm:text-4xl font-normal mt-1">3 Thrilling Game Modes</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {data.modes.map((mode) => (
+                <div class="card p-6 flex flex-col justify-between border-[var(--hairline)] bg-[var(--color-plum)]">
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-semibold uppercase tracking-wider text-[var(--color-gold)] font-mono">
+                        Mode
+                      </span>
+                      <span class="w-2 h-2 rounded-full bg-[var(--color-orchid)]"></span>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-normal text-[var(--color-pearl)]">
+                      {mode.name}
+                    </h3>
+                    <p class="text-sm text-[var(--color-mist)] leading-relaxed">
+                      {mode.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <!-- Key Features List -->
+        {data.features.length > 0 && (
+          <div class="space-y-6" data-reveal>
+            <div>
+              <span class="eyebrow">Highlights</span>
+              <h2 class="text-3xl sm:text-4xl font-normal mt-1">Game Features</h2>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {data.features.map((feat) => (
+                <div class="card p-5 flex items-start gap-3 border-[var(--hairline)] bg-[color-mix(in_oklab,var(--color-plum)_60%,transparent)]">
+                  <span class="w-6 h-6 rounded-full bg-[color-mix(in_oklab,var(--color-gold)_15%,transparent)] text-[var(--color-gold)] inline-flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon name="sparkle" size={12} />
+                  </span>
+                  <span class="text-sm text-[var(--color-pearl)] leading-relaxed">
+                    {feat}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <!-- How to Play Steps -->
+        {data.howToPlay.length > 0 && (
+          <div class="space-y-6" data-reveal>
+            <div>
+              <span class="eyebrow">Guide</span>
+              <h2 class="text-3xl sm:text-4xl font-normal mt-1">How to Play</h2>
+            </div>
+
+            <div class="space-y-3">
+              {data.howToPlay.map((step, idx) => (
+                <div class="card p-5 sm:p-6 flex items-start gap-4 border-[var(--hairline)]">
+                  <span class="text-sm font-semibold font-mono text-[var(--color-gold)] w-7 h-7 rounded-full border border-[var(--hairline-strong)] bg-[var(--color-plum)] flex items-center justify-center shrink-0 mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <div class="space-y-1">
+                    <h3 class="text-lg font-normal text-[var(--color-pearl)]">
+                      {step.title}
+                    </h3>
+                    <p class="text-sm text-[var(--color-mist)] leading-relaxed">
+                      {step.text}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <!-- Unlockable Birds Section -->
+        {data.unlockables && (
+          <div class="space-y-6" data-reveal>
+            <div>
+              <span class="eyebrow">Rewards & Shop</span>
+              <h2 class="text-3xl sm:text-4xl font-normal mt-1">{data.unlockables.title}</h2>
+              <p class="text-sm text-[var(--color-mist)] mt-2">
+                {data.unlockables.intro}
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {data.unlockables.items.map((bird) => (
+                <div class="card p-5 flex items-start gap-3.5 border-[var(--hairline)] bg-[var(--color-plum)]">
+                  <div class="w-10 h-10 rounded-xl bg-[color-mix(in_oklab,var(--color-gold)_12%,transparent)] border border-[var(--hairline)] text-[var(--color-gold)] flex items-center justify-center shrink-0">
+                    <Icon name="feather" size={20} />
+                  </div>
+                  <div>
+                    <h4 class="text-base font-medium text-[var(--color-pearl)]">
+                      {bird.name}
+                    </h4>
+                    <p class="text-xs text-[var(--color-mist)] mt-0.5">
+                      {bird.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {data.unlockables.note && (
+              <p class="text-xs text-[var(--color-mist)] italic pt-1">
+                {data.unlockables.note}
+              </p>
+            )}
+          </div>
+        )}
+
+        <!-- Ads Transparency Note -->
+        {data.adsNote && (
+          <div class="card p-6 border-[var(--hairline)] bg-[color-mix(in_oklab,var(--color-ink)_70%,var(--color-plum))] space-y-2 text-xs text-[var(--color-mist)] leading-relaxed" data-reveal>
+            <div class="flex items-center gap-2 text-[var(--color-gold)] font-medium uppercase tracking-wider text-[0.7rem]">
+              <Icon name="info" size={14} />
+              <span>About Ads</span>
+            </div>
+            <p>{data.adsNote}</p>
+          </div>
+        )}
+      </div>
+
+      <!-- Sidebar Column: Details Table & Helpful Links -->
+      <aside class="lg:col-span-4 space-y-8">
+        <!-- Details Table Card -->
+        <div class="card p-6 sm:p-7 border-[var(--hairline-strong)] space-y-5 sticky top-[calc(var(--header-h)+2rem)]" data-reveal>
+          <h3 class="text-lg font-medium text-[var(--color-pearl)] pb-3 border-b border-[var(--hairline)]">
+            Game Details
+          </h3>
+
+          <dl class="space-y-4 text-xs">
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-[var(--color-mist)]">Version</dt>
+              <dd class="font-mono text-[var(--color-pearl)]">{data.details.version}</dd>
+            </div>
+
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-[var(--color-mist)]">Updated On</dt>
+              <dd class="text-[var(--color-pearl)]">{formattedDate}</dd>
+            </div>
+
+            {data.details.requires && (
+              <div class="flex items-center justify-between gap-4">
+                <dt class="text-[var(--color-mist)]">Requires OS</dt>
+                <dd class="text-[var(--color-pearl)]">{data.details.requires}</dd>
+              </div>
+            )}
+
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-[var(--color-mist)]">Developer</dt>
+              <dd class="text-[var(--color-pearl)]">{data.details.developer}</dd>
+            </div>
+
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-[var(--color-mist)]">Price</dt>
+              <dd class="text-[var(--color-gold)] font-medium">{data.price}</dd>
+            </div>
+
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-[var(--color-mist)]">Content Rating</dt>
+              <dd class="text-[var(--color-pearl)]">{data.contentRating}</dd>
+            </div>
+
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-[var(--color-mist)]">In-App Purchases</dt>
+              <dd class="text-[var(--color-pearl)]">{data.inAppPurchases ? 'Yes' : 'None'}</dd>
+            </div>
+
+            {data.packageId && (
+              <div class="pt-2 border-t border-[var(--hairline)]">
+                <dt class="text-[var(--color-mist)] mb-1">Package ID</dt>
+                <dd class="font-mono text-[0.7rem] text-[var(--color-mist)]/80 break-all select-all">
+                  {data.packageId}
+                </dd>
+              </div>
+            )}
+          </dl>
+
+          <!-- Links Block: Guide & Privacy Policy -->
+          <div class="pt-4 border-t border-[var(--hairline)] space-y-2.5">
+            <span class="block text-[0.7rem] font-semibold uppercase tracking-wider text-[var(--color-gold)]">
+              Official Links
+            </span>
+
+            {data.links.guide && (
+              <a
+                href={data.links.guide}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center justify-between p-3 rounded-xl bg-[var(--color-plum)] hover:bg-[color-mix(in_oklab,var(--color-plum)_80%,white_5%)] border border-[var(--hairline)] text-xs text-[var(--color-pearl)] transition-colors group"
+              >
+                <span class="flex items-center gap-2">
+                  <Icon name="book" size={14} class="text-[var(--color-teal)]" />
+                  <span>How to Play & Guide</span>
+                </span>
+                <Icon name="external" size={12} class="text-[var(--color-mist)] group-hover:text-[var(--color-gold)] transition-colors" />
+              </a>
+            )}
+
+            {data.links.privacy && (
+              <a
+                href={data.links.privacy}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center justify-between p-3 rounded-xl bg-[var(--color-plum)] hover:bg-[color-mix(in_oklab,var(--color-plum)_80%,white_5%)] border border-[var(--hairline)] text-xs text-[var(--color-pearl)] transition-colors group"
+              >
+                <span class="flex items-center gap-2">
+                  <Icon name="shield" size={14} class="text-[var(--color-orchid)]" />
+                  <span>Privacy Policy</span>
+                </span>
+                <Icon name="external" size={12} class="text-[var(--color-mist)] group-hover:text-[var(--color-gold)] transition-colors" />
+              </a>
+            )}
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
