@@ -1,0 +1,105 @@
+---
+/**
+ * Store Contact page (/store/contact/).
+ * Separate from the main website's /contact page.
+ */
+import StoreLayout from '@/layouts/StoreLayout.astro';
+import StoreHeader from '@/components/store/StoreHeader.astro';
+import StoreFooter from '@/components/store/StoreFooter.astro';
+import StoreIcon, { type StoreIconName } from '@/components/store/StoreIcon.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const storeHome = `${base}store/`;
+
+interface ContactOption {
+  id: string;
+  icon: StoreIconName;
+  title: string;
+  description: string;
+  action: string;
+  href: string;
+  external: boolean;
+}
+
+const options: ContactOption[] = [
+  {
+    id: 'whatsapp',
+    icon: 'whatsapp',
+    title: 'WhatsApp',
+    description: 'Quick questions about an ebook, payment or download? Send us a message.',
+    action: 'Chat on WhatsApp',
+    href: 'https://wa.me/918329860510?text=Hello',
+    external: true,
+  },
+  {
+    id: 'instagram',
+    icon: 'instagram',
+    title: 'Instagram',
+    description: 'Prefer Instagram? Drop us a direct message and we will reply there.',
+    action: 'Message on Instagram',
+    href: 'https://ig.me/m/fairyprisme',
+    external: true,
+  },
+  {
+    id: 'email',
+    icon: 'mail',
+    title: 'Email',
+    description: 'For detailed enquiries, write to us at fairyprisme@gmail.com.',
+    action: 'Send an Email',
+    href: 'mailto:fairyprisme@gmail.com?subject=Store%20Enquiry',
+    external: false,
+  },
+];
+---
+
+<StoreLayout
+  title="Store Contact | Fairyprisme"
+  description="Questions about a Fairyprisme ebook? Reach us on WhatsApp, Instagram or email."
+>
+  <StoreHeader isContact />
+
+  <main id="store-main" tabindex="-1">
+    <div class="store-container">
+      <a href={storeHome} class="store-back">
+        <StoreIcon name="arrowLeft" size={18} />
+        <span>Back to Store</span>
+      </a>
+
+      <header class="contact-intro">
+        <p class="store-eyebrow">We're here for you</p>
+        <h1 class="contact-intro__title">Store Contact</h1>
+        <p class="contact-intro__text">
+          We're happy to help with any questions about our ebooks. Choose whichever way suits you best.
+        </p>
+      </header>
+
+      <ul class="contact-grid" role="list">
+        {
+          options.map((o) => (
+            <li>
+              <a
+                href={o.href}
+                class="contact-card"
+                target={o.external ? '_blank' : undefined}
+                rel={o.external ? 'noopener noreferrer' : undefined}
+              >
+                <span class="contact-card__icon">
+                  <StoreIcon name={o.icon} size={24} />
+                </span>
+                <span class="contact-card__title">{o.title}</span>
+                <span class="contact-card__text">{o.description}</span>
+                <span class="contact-card__action">
+                  {o.action}
+                  <StoreIcon name={o.external ? 'arrowUpRight' : 'arrowRight'} size={16} />
+                </span>
+                {o.external && <span class="sr-only">(opens in a new tab)</span>}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </main>
+
+  <StoreFooter />
+</StoreLayout>

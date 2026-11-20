@@ -1,0 +1,108 @@
+---
+/**
+ * Store header: brand name, light/dark switch, Contact link.
+ * Never links to the main website.
+ *
+ * - On the store home page (`isHome`), the brand scrolls to the top.
+ * - On other store pages, the brand opens the store home page.
+ */
+import StoreIcon from './StoreIcon.astro';
+
+interface Props {
+  isHome?: boolean;
+  /** Marks the Contact link as the current page. */
+  isContact?: boolean;
+}
+
+const { isHome = false, isContact = false } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const storeHome = `${base}store/`;
+const storeContact = `${base}store/contact/`;
+---
+
+<header class="store-header">
+  <div class="store-container store-header__inner">
+    <a
+      href={storeHome}
+      class="store-brand"
+      data-scroll-top={isHome ? '' : undefined}
+      aria-label={isHome ? 'Fairyprisme Store, back to top' : 'Fairyprisme Store home'}
+    >
+      Fairyprisme
+    </a>
+
+    <div class="store-header__actions">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch theme">
+        <StoreIcon name="moon" size={19} class="theme-toggle__moon" />
+        <StoreIcon name="sun" size={19} class="theme-toggle__sun" />
+      </button>
+
+      <a href={storeContact} class="store-nav-link" aria-current={isContact ? 'page' : undefined}>Contact</a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const STORAGE_KEY = 'fp-store-theme';
+
+  function currentTheme(): 'light' | 'dark' {
+    return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  }
+
+  function updateLabel() {
+    if (!toggle) return;
+    const next = currentTheme() === 'dark' ? 'light' : 'dark';
+    toggle.setAttribute('aria-label', `Switch to ${next} mode`);
+    toggle.setAttribute('title', `Switch to ${next} mode`);
+  }
+
+  function applyTheme(theme: 'light' | 'dark', persist: boolean) {
+    root.setAttribute('data-theme', theme);
+    if (persist) {
+      try {
+        localStorage.setItem(STORAGE_KEY, theme);
+      } catch {
+        /* storage unavailable (private mode) – theme still applies for this page */
+      }
+    }
+    updateLabel();
+  }
+
+  toggle?.addEventListener('click', () => {
+    applyTheme(currentTheme() === 'dark' ? 'light' : 'dark', true);
+  });
+
+  // Follow system changes until the visitor makes an explicit choice.
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  media.addEventListener('change', (e) => {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+    if (saved !== 'light' && saved !== 'dark') applyTheme(e.matches ? 'dark' : 'light', false);
+  });
+
+  // Keep the theme in sync if the page is restored from the back/forward cache.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === 'light' || saved === 'dark') applyTheme(saved, false);
+    } catch {
+      /* ignore */
+    }
+  });
+
+  // Brand on the store home page: smooth scroll to top, keep the URL (and tab) as is.
+  document.querySelector<HTMLAnchorElement>('[data-scroll-top]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  });
+
+  updateLabel();
+</script>

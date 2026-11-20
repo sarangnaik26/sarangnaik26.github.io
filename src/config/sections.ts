@@ -59,10 +59,14 @@ export const sections: Section[] = [
 /** Sections with real pages. */
 export const liveSections = sections.filter((s) => s.enabled);
 
-/** Navigation = Home + live sections + Contact. */
+/** Ebook store (separate area of the site, see src/pages/store/). */
+export const storeHref = '/store/';
+
+/** Navigation = Home + live sections + Store + Contact. */
 export const navItems = [
   { label: 'Home', href: '/' },
   ...liveSections.map((s) => ({ label: s.label, href: s.href })),
+  { label: 'Store', href: storeHref },
   { label: 'Contact', href: '/contact' },
 ];
 

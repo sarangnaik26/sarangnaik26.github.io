@@ -1,0 +1,70 @@
+---
+/**
+ * Layout for the Fairyprisme Store.
+ *
+ * Deliberately independent from BaseLayout: it does NOT import the main site's
+ * global.css, header or footer, so the store has its own look and never links
+ * back to the main website.
+ */
+import '@/styles/store.css';
+
+interface Props {
+  /** Full document title, e.g. "Fairyprisme Store". */
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://sarangnaik26.github.io').href;
+const ogImageUrl = new URL(`${base}og-default.png`, Astro.site ?? 'https://sarangnaik26.github.io').href;
+---
+
+<!doctype html>
+<html lang="en" class="store-root">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:site_name" content="Fairyprisme" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
+
+    <!--
+      Apply the theme before first paint (no flash of the wrong theme).
+      Saved choice wins; otherwise follow the system preference.
+    -->
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        var t = null;
+        try {
+          t = localStorage.getItem('fp-store-theme');
+        } catch (e) {}
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        d.setAttribute('data-theme', t);
+        d.classList.add('js');
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a href="#store-main" class="skip-link">Skip to content</a>
+    <slot />
+  </body>
+</html>

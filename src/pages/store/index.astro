@@ -1,0 +1,270 @@
+---
+/**
+ * Fairyprisme Store – home page (/store/).
+ * Cards are generated from `src/data/store-products.ts`.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import StoreLayout from '@/layouts/StoreLayout.astro';
+import StoreHeader from '@/components/store/StoreHeader.astro';
+import StoreFooter from '@/components/store/StoreFooter.astro';
+import StoreIcon from '@/components/store/StoreIcon.astro';
+import { products, type StoreProduct } from '@/data/store-products';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+/** Does the cover exist in /public? If not, render a neutral placeholder. */
+const hasImage = (p: StoreProduct) => {
+  try {
+    return fs.existsSync(path.join(process.cwd(), 'public', p.image.replace(/^\/+/, '')));
+  } catch {
+    return true; // let the browser try; the runtime fallback still covers failures
+  }
+};
+
+const tabs = [
+  {
+    id: 'active',
+    label: 'Active',
+    items: products.filter((p) => p.status === 'active'),
+    emptyTitle: 'New ebooks coming soon',
+    emptyText: 'Our next titles are being prepared. Please check back shortly.',
+  },
+  {
+    id: 'coming-soon',
+    label: 'Coming Soon',
+    items: products.filter((p) => p.status === 'coming-soon'),
+    emptyTitle: 'More titles on the way',
+    emptyText: 'Upcoming ebooks will be announced here.',
+  },
+] as const;
+---
+
+<StoreLayout
+  title="Fairyprisme Store"
+  description="Browse Fairyprisme ebooks – travel guides, recipe collections, style books and stories. Simple, secure checkout on Superprofile."
+>
+  <!-- Choose the tab before first paint so the right panel shows instantly (also after Back). -->
+  <script is:inline slot="head">
+    (function () {
+      var h = (location.hash || '').replace('#', '');
+      var tab = h === 'coming-soon' || h === 'active' ? h : null;
+      if (!tab) {
+        try {
+          tab = sessionStorage.getItem('fp-store-tab');
+        } catch (e) {}
+      }
+      if (tab !== 'coming-soon') tab = 'active';
+      document.documentElement.setAttribute('data-store-tab', tab);
+    })();
+  </script>
+
+  <StoreHeader isHome />
+
+  <main id="store-main" tabindex="-1">
+    <div class="store-container">
+      <h1 class="sr-only">Fairyprisme Store</h1>
+
+      <div class="store-tabs" role="tablist" aria-label="Products">
+        {
+          tabs.map((t, i) => (
+            <button
+              type="button"
+              role="tab"
+              class="store-tab"
+              id={`tab-${t.id}`}
+              data-tab={t.id}
+              aria-controls={`panel-${t.id}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+            >
+              {t.label}
+              <span class="store-tab__count" aria-hidden="true">
+                {t.items.length}
+              </span>
+            </button>
+          ))
+        }
+      </div>
+
+      {
+        tabs.map((t) => (
+          <section
+            class="store-panel"
+            id={`panel-${t.id}`}
+            data-panel={t.id}
+            role="tabpanel"
+            aria-labelledby={`tab-${t.id}`}
+            tabindex="0"
+          >
+            {t.items.length === 0 ? (
+              <div class="store-empty">
+                <span class="store-empty__icon">
+                  <StoreIcon name="book" size={26} />
+                </span>
+                <h2 class="store-empty__title">{t.emptyTitle}</h2>
+                <p class="store-empty__text">{t.emptyText}</p>
+              </div>
+            ) : (
+              <ul class="product-grid" role="list">
+                {t.items.map((p, i) => {
+                  const showImage = hasImage(p);
+                  return (
+                    <li class="product-card">
+                      <div class:list={['product-card__cover', { 'is-missing': !showImage }]}>
+                        {showImage && (
+                          <img
+                            src={`${base}${p.image.replace(/^\/+/, '')}`}
+                            alt={`Cover of ${p.name}`}
+                            width="900"
+                            height="1200"
+                            loading={i < 1 && t.id === 'active' ? 'eager' : 'lazy'}
+                            decoding="async"
+                            onerror="this.parentElement.classList.add('is-missing');this.remove();"
+                          />
+                        )}
+                        <div class="product-card__placeholder" aria-hidden={showImage ? 'true' : undefined}>
+                          <StoreIcon name="book" size={30} />
+                          <span>{p.name}</span>
+                        </div>
+                      </div>
+
+                      <div class="product-card__body">
+                        <h2 class="product-card__name">{p.name}</h2>
+                        <a
+                          href={p.link}
+                          class:list={['btn-details', p.status === 'active' ? 'btn-details--green' : 'btn-details--blue']}
+                          aria-label={`More details about ${p.name}`}
+                        >
+                          More Details
+                          <StoreIcon name="arrowRight" size={16} />
+                        </a>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        ))
+      }
+    </div>
+  </main>
+
+  <StoreFooter />
+</StoreLayout>
+
+<script>
+  type TabId = 'active' | 'coming-soon';
+  const root = document.documentElement;
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.store-tab'));
+  const panels = Array.from(document.querySelectorAll<HTMLElement>('.store-panel'));
+  const TAB_KEY = 'fp-store-tab';
+  const SCROLL_KEY = 'fp-store-scroll';
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const isTab = (v: unknown): v is TabId => v === 'active' || v === 'coming-soon';
+
+  function readTab(): TabId {
+    const hash = location.hash.replace('#', '');
+    if (isTab(hash)) return hash;
+    try {
+      const saved = sessionStorage.getItem(TAB_KEY);
+      if (isTab(saved)) return saved;
+    } catch {
+      /* ignore */
+    }
+    return 'active';
+  }
+
+  function selectTab(id: TabId, opts: { animate?: boolean; focus?: boolean; updateUrl?: boolean } = {}) {
+    const changed = root.getAttribute('data-store-tab') !== id;
+    root.setAttribute('data-store-tab', id);
+
+    tabs.forEach((tab) => {
+      const on = tab.dataset.tab === id;
+      tab.setAttribute('aria-selected', String(on));
+      tab.tabIndex = on ? 0 : -1;
+      if (on && opts.focus) tab.focus();
+    });
+
+    if (opts.animate && changed && !reduceMotion.matches) {
+      const panel = panels.find((p) => p.dataset.panel === id);
+      if (panel) {
+        panel.classList.remove('is-entering');
+        void panel.offsetWidth; // restart the animation
+        panel.classList.add('is-entering');
+      }
+    }
+
+    try {
+      sessionStorage.setItem(TAB_KEY, id);
+    } catch {
+      /* ignore */
+    }
+    // replaceState: remember the tab in the URL without adding history entries
+    // or jumping the page, so Back from Superprofile returns to this tab.
+    if (opts.updateUrl !== false && location.hash !== `#${id}`) {
+      history.replaceState(history.state, '', `#${id}`);
+    }
+  }
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectTab(tab.dataset.tab as TabId, { animate: true }));
+
+    // Keyboard support (WAI-ARIA tabs pattern, automatic activation).
+    tab.addEventListener('keydown', (e) => {
+      let next = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = tabs.length - 1;
+      if (next < 0) return;
+      e.preventDefault();
+      selectTab(tabs[next].dataset.tab as TabId, { animate: true, focus: true });
+    });
+  });
+
+  panels.forEach((p) =>
+    p.addEventListener('animationend', () => p.classList.remove('is-entering'))
+  );
+
+  // Sync ARIA with the tab chosen before paint (hash / sessionStorage).
+  selectTab(readTab(), { updateUrl: location.hash !== '' });
+
+  // Manual hash edits / links like #coming-soon.
+  window.addEventListener('hashchange', () => {
+    const hash = location.hash.replace('#', '');
+    if (isTab(hash)) selectTab(hash, { animate: true, updateUrl: false });
+  });
+
+  // Remember scroll position so Back from a Superprofile page lands in the same place.
+  window.addEventListener('pagehide', () => {
+    try {
+      sessionStorage.setItem(SCROLL_KEY, JSON.stringify({ tab: readTab(), y: window.scrollY }));
+    } catch {
+      /* ignore */
+    }
+  });
+
+  function restoreScrollIfNeeded() {
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    if (!nav || nav.type !== 'back_forward') return;
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || 'null');
+      if (!saved || saved.tab !== readTab()) return;
+      // Only step in if the browser did not restore the position itself.
+      if (Math.abs(window.scrollY - saved.y) > 4) window.scrollTo(0, saved.y);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (document.readyState === 'complete') restoreScrollIfNeeded();
+  else window.addEventListener('load', restoreScrollIfNeeded, { once: true });
+
+  // Restored from the back/forward cache: the DOM is intact, just re-sync the tab.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) selectTab(readTab(), { updateUrl: false });
+  });
+</script>

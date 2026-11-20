@@ -1,0 +1,33 @@
+---
+/**
+ * Minimal store footer: social links + copyright.
+ * No links to the main website.
+ */
+import StoreIcon from './StoreIcon.astro';
+import { storeSocials } from '@/data/store-products';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="store-footer">
+  <div class="store-container">
+    <section class="store-social" aria-labelledby="store-social-title">
+      <p class="store-eyebrow" id="store-social-title">Follow Fairyprisme</p>
+      <ul class="store-social__list">
+        {
+          storeSocials.map((s) => (
+            <li>
+              <a href={s.url} class="store-social__link" target="_blank" rel="noopener noreferrer">
+                <StoreIcon name={s.id} size={18} />
+                <span>{s.label}</span>
+                <span class="sr-only">(opens in a new tab)</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <p class="store-footer__copy">&copy; {year} Fairyprisme</p>
+  </div>
+</footer>
