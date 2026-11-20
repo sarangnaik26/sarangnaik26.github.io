@@ -28,7 +28,25 @@ const storeContact = `${base}store/contact/`;
       data-scroll-top={isHome ? '' : undefined}
       aria-label={isHome ? 'Fairyprisme Store, back to top' : 'Fairyprisme Store home'}
     >
-      Fairyprisme
+      <img
+        src={`${base}brand/logo-black.png`}
+        alt="Fairyprisme"
+        width="363"
+        height="144"
+        class="store-brand__logo store-brand__logo--light"
+        loading="eager"
+        decoding="async"
+      />
+      <img
+        src={`${base}brand/logo-white.png`}
+        alt=""
+        aria-hidden="true"
+        width="363"
+        height="144"
+        class="store-brand__logo store-brand__logo--dark"
+        loading="eager"
+        decoding="async"
+      />
     </a>
 
     <div class="store-header__actions">
@@ -106,3 +124,4 @@ const storeContact = `${base}store/contact/`;
 
   updateLabel();
 </script>
+

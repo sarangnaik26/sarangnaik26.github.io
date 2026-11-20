@@ -235,14 +235,28 @@ img {
 }
 
 .store-brand {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 25px;
-  letter-spacing: 0.01em;
-  line-height: 1;
-  color: var(--text);
-  padding: 6px 2px;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.store-brand__logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.store-brand__logo--dark {
+  display: none;
+}
+
+[data-theme='dark'] .store-brand__logo--light {
+  display: none;
+}
+
+[data-theme='dark'] .store-brand__logo--dark {
+  display: block;
 }
 
 .store-header__actions {
@@ -833,8 +847,8 @@ html[data-store-tab='coming-soon'] #panel-coming-soon {
   .store-container {
     padding-inline: 40px;
   }
-  .store-brand {
-    font-size: 30px;
+  .store-brand__logo {
+    height: 44px;
   }
   .store-header__actions {
     gap: 10px;
@@ -891,8 +905,8 @@ html[data-store-tab='coming-soon'] #panel-coming-soon {
   .store-container {
     padding-inline: 14px;
   }
-  .store-brand {
-    font-size: 22px;
+  .store-brand__logo {
+    height: 32px;
   }
   .store-nav-link {
     padding: 0 10px;
